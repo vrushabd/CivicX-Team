@@ -6,7 +6,8 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { NotificationSystem } from "@/components/notification-system"
+import { NotificationSystem } from "@/components/notifications/notification-system"
+import { ComplaintModal } from "@/components/complaint-modal"
 import { Plus, MapPin, Clock, CheckCircle, AlertCircle, LogOut, Leaf } from "lucide-react"
 
 export default function UserDashboard() {
@@ -15,7 +16,7 @@ export default function UserDashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    if (typeof window==undefined) return
+    if (typeof window == undefined) return
     const role = localStorage.getItem("userRole")
     const email = localStorage.getItem("userEmail")
 
@@ -83,6 +84,7 @@ export default function UserDashboard() {
           </div>
           <div className="flex items-center gap-2 text-white">
             <NotificationSystem userEmail={userEmail} userRole="user" />
+            <ComplaintModal userEmail={userEmail} />
             <Button
               variant="outline"
               onClick={handleLogout}
@@ -154,7 +156,10 @@ export default function UserDashboard() {
                   )}
                   <div className="flex items-center justify-between text-sm text-slate-400">
                     <span>Reported on {new Date(report.createdAt).toLocaleDateString()}</span>
-                    <span className="capitalize">{report.type} Issue</span>
+                    <div className="flex items-center gap-4">
+                      <span className="capitalize">{report.type} Issue</span>
+                      <ComplaintModal userEmail={userEmail} report={report} />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -25,7 +25,7 @@ export function FirebaseProvider({ children }) {
     // Only initialize Firebase if config is available
     try {
       // Dynamic import to avoid errors when Firebase isn't configured
-      import("@/lib/firebase-config")
+      import("@/lib/firebase")
         .then((firebase) => {
           setIsFirebaseAvailable(true)
           console.log("Firebase initialized successfully")

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import MapClickHandler from "@/components/MapClickHandler.client";
+import MapClickHandler from "./MapClickHandler.client";
 
 const defaultCenter = { lat: 20.5937, lng: 78.9629 }; // India
 

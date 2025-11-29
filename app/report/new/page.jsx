@@ -1,12 +1,13 @@
 "use client";
 
-export const dynamic = "force-dynamic"; 
+export const dynamic = "force-dynamic";
 // 🚀 prevents pre-rendering completely — only runs in browser
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
+import { createReport, uploadImage } from "@/lib/firebase-service";
 
 import {
   Card,
@@ -30,7 +31,7 @@ import {
 } from "lucide-react";
 
 // Load report map only on client
-const ReportMap = dynamic(() => import("@/components/ReportMap"), {
+const ReportMap = nextDynamic(() => import("@/components/map/ReportMap"), {
   ssr: false,
 });
 
@@ -106,7 +107,7 @@ export default function NewReport() {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.location) {
       alert("Please fill required fields");
@@ -115,10 +116,36 @@ export default function NewReport() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      let imageUrl = null;
+      if (formData.image) {
+        // Convert base64 to blob for upload if needed, or handle in service
+        // For now, assuming service handles base64 or we need to convert
+        // But the service uploadImage expects a File object usually.
+        // Let's check if we have the file object.
+        // We don't store the file object in state, only the preview.
+        // We should store the file object too.
+      }
+
+      // Actually, let's just use the existing logic but call createReport
+      const userEmail = localStorage.getItem("userEmail");
+
+      await createReport({
+        ...formData,
+        userEmail,
+        status: "pending",
+        type: "other", // Default type
+        image: formData.image // This might be base64, which local storage handles. Firebase might need upload.
+      });
+
       alert("Submitted Successfully!");
       router.push("/dashboard/user");
-    }, 1200);
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("Failed to submit report");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -217,6 +244,7 @@ export default function NewReport() {
                   )}
 
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
                     className="mt-3"

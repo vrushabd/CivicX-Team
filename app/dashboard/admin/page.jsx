@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { NotificationSystem } from "@/components/notification-system"
+import { NotificationSystem } from "@/components/notifications/notification-system"
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    if (typeof window==undefined) return
+    if (typeof window == undefined) return
     const role = localStorage.getItem("userRole")
     const email = localStorage.getItem("userEmail")
 
@@ -46,11 +46,11 @@ export default function AdminDashboard() {
     // Load workers (simulate worker data)
     const workerList = JSON.parse(
       localStorage.getItem("workers") ||
-        JSON.stringify([
-          { id: "1", name: "John", email: "ssr@city.gov", status: "available", assignedTasks: 2 },
-          { id: "2", name: "Sarah", email: "abdh@city.gov", status: "busy", assignedTasks: 5 },
-          { id: "3", name: "Mike", email: "kum@city.gov", status: "available", assignedTasks: 1 },
-        ]),
+      JSON.stringify([
+        { id: "1", name: "John", email: "ssr@city.gov", status: "available", assignedTasks: 2 },
+        { id: "2", name: "Sarah", email: "abdh@city.gov", status: "busy", assignedTasks: 5 },
+        { id: "3", name: "Mike", email: "kum@city.gov", status: "available", assignedTasks: 1 },
+      ]),
     )
     setWorkers(workerList)
   }, [router])
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
                   <SelectItem value="pothole">Pothole</SelectItem>
                   <SelectItem value="garbage">Garbage</SelectItem>
                   <SelectItem value="streetlight">Street Light</SelectItem>
-                  
+
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -303,9 +303,8 @@ export default function AdminDashboard() {
                       <div className="mb-4 p-3 bg-slate-700 rounded-lg border border-slate-600">
                         <div className="flex items-center gap-2 mb-1">
                           <div
-                            className={`w-2 h-2 rounded-full ${
-                              report.aiValidation.isValid ? "bg-emerald-400" : "bg-red-400"
-                            }`}
+                            className={`w-2 h-2 rounded-full ${report.aiValidation.isValid ? "bg-emerald-400" : "bg-red-400"
+                              }`}
                           ></div>
                           <span className="text-sm font-medium text-white">
                             AI Validation: {report.aiValidation.isValid ? "Valid" : "Invalid"} (

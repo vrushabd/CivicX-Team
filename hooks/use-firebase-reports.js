@@ -10,12 +10,19 @@ export const useFirebaseReports = (filters = {}) => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const unsubscribe = subscribeToReports(filters, (updatedReports) => {
-      setReports(updatedReports)
-      setLoading(false)
-    })
+    let unsubscribe
+    const setupSubscription = async () => {
+      unsubscribe = await subscribeToReports((updatedReports) => {
+        setReports(updatedReports)
+        setLoading(false)
+      }, filters)
+    }
 
-    return () => unsubscribe()
+    setupSubscription()
+
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
   }, [JSON.stringify(filters)])
 
   const submitReport = async (reportData, imageFile) => {

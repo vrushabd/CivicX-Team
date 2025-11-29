@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { NotificationSystem } from "@/components/notification-system"
+import { NotificationSystem } from "@/components/notifications/notification-system"
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,7 @@ export default function WorkerDashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    if (typeof window==undefined) return
+    if (typeof window == undefined) return
     const role = localStorage.getItem("userRole")
     const email = localStorage.getItem("userEmail")
 
