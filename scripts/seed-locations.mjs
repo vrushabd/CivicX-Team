@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
 
-// Load env vars
-dotenv.config({ path: '.env.local' })
+// Load env vars via node --env-file=.env.local flag
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
