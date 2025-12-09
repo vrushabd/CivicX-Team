@@ -170,11 +170,11 @@ export default function UserDashboard() {
                   {report.image && (
                     <div className="mb-6 group-hover:opacity-100 transition-opacity">
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Evidence Photo</p>
-                      <div className="overflow-hidden rounded-xl border border-white/10 group-hover:border-emerald-500/20 transition-colors">
+                      <div className="overflow-hidden rounded-xl border border-white/10 group-hover:border-emerald-500/20 transition-colors w-1/2">
                         <img
                           src={report.image || "/placeholder.svg"}
                           alt="Report evidence"
-                          className="w-full max-w-md h-48 object-cover hover:scale-105 transition-transform duration-700"
+                          className="w-full h-auto object-contain hover:scale-105 transition-transform duration-700"
                         />
                       </div>
                     </div>
@@ -182,11 +182,11 @@ export default function UserDashboard() {
                   {report.video && (
                     <div className="mb-6">
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Evidence Video</p>
-                      <div className="overflow-hidden rounded-xl border border-white/10 bg-black">
+                      <div className="overflow-hidden rounded-xl border border-white/10 bg-black w-1/2">
                         <video
                           src={report.video}
                           controls
-                          className="w-full max-w-md h-64 object-contain"
+                          className="w-full h-auto object-contain"
                         />
                       </div>
                     </div>
@@ -196,11 +196,11 @@ export default function UserDashboard() {
                       <p className="text-sm text-emerald-400 mb-3 font-semibold flex items-center gap-2">
                         <CheckCircle className="w-4 h-4" /> Completion Verified
                       </p>
-                      <div className="overflow-hidden rounded-lg border border-emerald-500/20 mb-3">
+                      <div className="overflow-hidden rounded-lg border border-emerald-500/20 mb-3 w-1/2">
                         <img
                           src={report.completionImage}
                           alt="Completion evidence"
-                          className="w-full max-w-md h-48 object-cover hover:scale-105 transition-transform duration-500"
+                          className="w-full h-auto object-contain hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                       {report.completionNotes && (
