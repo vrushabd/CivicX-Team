@@ -8,51 +8,47 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { NotificationSystem } from "@/components/notifications/notification-system"
 import { ComplaintModal } from "@/components/complaint-modal"
-import { ProfileModal } from "@/components/profile-modal"
 import { Plus, MapPin, Clock, CheckCircle, AlertCircle, LogOut, Leaf } from "lucide-react"
-import { getUserReports, getUserProfile } from "@/lib/data-service"
+import { getUserReports } from "@/lib/data-service"
 
 export default function UserDashboard() {
   const [userEmail, setUserEmail] = useState("")
-  const [fullName, setFullName] = useState("")
   const [reports, setReports] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    if (typeof window == undefined) return
+    if (typeof window === "undefined") return
+
     const role = localStorage.getItem("userRole")
     const email = localStorage.getItem("userEmail")
 
+    console.log("User Dashboard Auth Check:", { role, email })
+
     if (role !== "user") {
+      console.warn("Invalid role for user dashboard, redirecting:", role)
       router.push("/")
       return
     }
 
     setUserEmail(email)
 
-    // Load user's data
-    const loadData = async () => {
+    // Load user's reports from Firebase
+    const loadUserReports = async () => {
       try {
         setIsLoading(true)
-        const [userReports, userProfile] = await Promise.all([
-          getUserReports(email),
-          getUserProfile(email)
-        ])
+        const userReports = await getUserReports(email)
         setReports(userReports)
-        if (userProfile?.full_name) {
-          setFullName(userProfile.full_name)
-        }
       } catch (error) {
-        console.error("Error loading user data:", error)
+        console.error("Error loading user reports:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadData()
+    loadUserReports()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run once on mount
+  }, []) // Only run once on mount - router dependency causes infinite re-renders
 
   const handleLogout = () => {
     localStorage.removeItem("userRole")
@@ -101,15 +97,12 @@ export default function UserDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">Citizen Dashboard</h1>
-              <p className="text-slate-400 text-xs hidden md:block">
-                Welcome back, {fullName || (userEmail ? userEmail.split('@')[0] : 'User')}
-              </p>
+              <p className="text-slate-400 text-xs hidden md:block">Welcome back, {userEmail ? userEmail.split('@')[0] : 'User'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-white">
             <NotificationSystem userEmail={userEmail} userRole="user" />
             <ComplaintModal userEmail={userEmail} />
-            <ProfileModal userEmail={userEmail} currentName={fullName} onUpdate={setFullName} />
             <Button
               variant="outline"
               onClick={handleLogout}
@@ -122,8 +115,9 @@ export default function UserDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+      <main className="container mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-500">
+        {/* Stats Section */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <h2 className="text-2xl font-bold text-white tracking-tight">Your Reports</h2>
             <p className="text-slate-400 mt-1">Track the status of your civic issue reports</p>
