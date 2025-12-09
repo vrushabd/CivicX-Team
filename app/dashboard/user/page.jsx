@@ -93,7 +93,7 @@ export default function UserDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">Citizen Dashboard</h1>
-              <p className="text-slate-400 text-xs">Welcome back, {userEmail ? userEmail.split('@')[0] : 'User'}</p>
+              <p className="text-slate-400 text-xs hidden md:block">Welcome back, {userEmail ? userEmail.split('@')[0] : 'User'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-white">
@@ -105,14 +105,14 @@ export default function UserDashboard() {
               className="gap-2 bg-white/5 border-white/10 text-slate-300 hover:bg-red-500/20 hover:text-red-200 hover:border-red-500/30 transition-all duration-300 active:scale-95"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              <span className="hidden md:inline">Logout</span>
             </Button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-2xl font-bold text-white tracking-tight">Your Reports</h2>
             <p className="text-slate-400 mt-1">Track the status of your civic issue reports</p>
