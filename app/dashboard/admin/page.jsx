@@ -366,7 +366,9 @@ export default function AdminDashboard() {
                             setSelectedMapReport(matchingReport)
                           } else {
                             // 2. If no report, check our pre-defined location images
-                            const locationImage = getImageForLocation(location.split(',')[0]);
+                            // Pass the FULL location string to allow partial matching against long addresses
+                            console.log("Checking image for location:", location)
+                            const locationImage = getImageForLocation(location);
 
                             if (locationImage) {
                               // Determine if it's a video or image
