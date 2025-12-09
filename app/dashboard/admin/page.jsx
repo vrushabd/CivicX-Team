@@ -48,6 +48,7 @@ export default function AdminDashboard() {
   const [newLocKey, setNewLocKey] = useState("")
   const [newLocFile, setNewLocFile] = useState(null)
   const [isUploadingLoc, setIsUploadingLoc] = useState(false)
+  const [isManageOpen, setIsManageOpen] = useState(false)
 
   // Map state
   const [mapLocation, setMapLocation] = useState("")
@@ -517,7 +518,10 @@ export default function AdminDashboard() {
                         <Button
                           className="w-full"
                           variant="secondary"
-                          onClick={() => setSelectedReport(selectedMapReport)}
+                          onClick={() => {
+                            setSelectedReport(selectedMapReport)
+                            setIsManageOpen(true)
+                          }}
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Manage Report
@@ -598,118 +602,45 @@ export default function AdminDashboard() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="gap-2 bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                              onClick={() => setSelectedReport(report)}
-                            >
-                              <Eye className="w-4 h-4" />
-                              View Details
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl bg-slate-800 border-slate-600">
-                            <DialogHeader>
-                              <DialogTitle className="text-white">{selectedReport?.title}</DialogTitle>
-                              <DialogDescription className="text-slate-300">
-                                Report Details and Evidence
-                              </DialogDescription>
-                            </DialogHeader>
-                            {selectedReport && (
-                              <div className="space-y-4">
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium mb-2 text-white">Description</h4>
-                                    <p className="text-slate-300">{selectedReport.description}</p>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium mb-2 text-white">Location</h4>
-                                    <p className="text-slate-300">{selectedReport.location}</p>
-                                  </div>
-                                  {selectedReport.image && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Photo Evidence</h4>
-                                      <img
-                                        src={selectedReport.image || "/placeholder.svg"}
-                                        alt="Report evidence"
-                                        className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
-                                      />
-                                    </div>
-                                  )}
-                                  {selectedReport.video && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Video Evidence</h4>
-                                      <video
-                                        src={selectedReport.video}
-                                        controls
-                                        className="w-full max-w-md h-64 object-contain rounded-lg border border-slate-600 bg-black"
-                                      />
-                                    </div>
-                                  )}
-                                  {selectedReport.completionImage && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Completion Photo</h4>
-                                      <img
-                                        src={selectedReport.completionImage || "/placeholder.svg"}
-                                        alt="Completion proof"
-                                        className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
-                                      />
-                                    </div>
-                                  )}
-                                  {selectedReport.completionNotes && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Completion Notes</h4>
-                                      <p className="text-slate-300">{selectedReport.completionNotes}</p>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <h4 className="font-medium mb-2 text-white">Submitted</h4>
-                                    <p className="text-slate-300">
-                                      {new Date(selectedReport.createdAt).toLocaleString()} by {selectedReport.userEmail}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="pt-4 border-t border-slate-700">
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => handleDeleteReport(selectedReport.id)}
-                                    className="w-full gap-2"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete Report
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-                          </DialogContent>
-                        </Dialog>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                            onClick={() => {
+                              setSelectedReport(report)
+                              setIsManageOpen(true)
+                            }}
+                          >
+                            <Eye className="w-4 h-4" />
+                            View Details
+                          </Button>
 
-                        {report.status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleApproveReport(report.id)}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                            >
-                              Approve
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleRejectReport(report.id)}>
-                              Reject
-                            </Button>
-                          </>
-                        )}
+                          {report.status === "pending" && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleApproveReport(report.id)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                              >
+                                Approve
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => handleRejectReport(report.id)}>
+                                Reject
+                              </Button>
+                            </>
+                          )}
 
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteReport(report.id)}
-                          className="text-slate-400 hover:text-red-400 hover:bg-red-900/20"
-                          title="Delete Report"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteReport(report.id)}
+                            className="text-slate-400 hover:text-red-400 hover:bg-red-900/20"
+                            title="Delete Report"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
 
                         {report.status === "approved" && (
                           <Dialog>
@@ -850,6 +781,111 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
         </Tabs>
+        <Dialog open={isManageOpen} onOpenChange={setIsManageOpen}>
+          <DialogContent className="max-w-2xl bg-slate-800 border-slate-600">
+            <DialogHeader>
+              <DialogTitle className="text-white">{selectedReport?.title}</DialogTitle>
+              <DialogDescription className="text-slate-300">
+                Report Details and Evidence
+              </DialogDescription>
+            </DialogHeader>
+            {selectedReport && (
+              <div className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2 text-white">Description</h4>
+                    <p className="text-slate-300">{selectedReport.description}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2 text-white">Location</h4>
+                    <p className="text-slate-300">{selectedReport.location}</p>
+                  </div>
+                  {selectedReport.image && (
+                    <div>
+                      <h4 className="font-medium mb-2 text-white">Photo Evidence</h4>
+                      <img
+                        src={selectedReport.image || "/placeholder.svg"}
+                        alt="Report evidence"
+                        className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
+                      />
+                    </div>
+                  )}
+                  {selectedReport.video && (
+                    <div>
+                      <h4 className="font-medium mb-2 text-white">Video Evidence</h4>
+                      <video
+                        src={selectedReport.video}
+                        controls
+                        className="w-full max-w-md h-64 object-contain rounded-lg border border-slate-600 bg-black"
+                      />
+                    </div>
+                  )}
+                  {selectedReport.completionImage && (
+                    <div>
+                      <h4 className="font-medium mb-2 text-white">Completion Photo</h4>
+                      <img
+                        src={selectedReport.completionImage || "/placeholder.svg"}
+                        alt="Completion proof"
+                        className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
+                      />
+                    </div>
+                  )}
+                  {selectedReport.completionNotes && (
+                    <div>
+                      <h4 className="font-medium mb-2 text-white">Completion Notes</h4>
+                      <p className="text-slate-300">{selectedReport.completionNotes}</p>
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-medium mb-2 text-white">Submitted</h4>
+                    <p className="text-slate-300">
+                      {new Date(selectedReport.createdAt).toLocaleString()} by {selectedReport.userEmail}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-700 flex flex-col gap-2">
+                  {/* Action Buttons inside Modal */}
+                  {selectedReport.status === "pending" && (
+                    <div className="grid grid-cols-2 gap-4 mb-2">
+                      <Button
+                        onClick={() => {
+                          handleApproveReport(selectedReport.id)
+                          setIsManageOpen(false)
+                        }}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        Approve Report
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          handleRejectReport(selectedReport.id)
+                          setIsManageOpen(false)
+                        }}
+                        className="w-full"
+                      >
+                        Reject Report
+                      </Button>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      handleDeleteReport(selectedReport.id)
+                      setIsManageOpen(false)
+                    }}
+                    className="w-full gap-2 bg-red-900/40 hover:bg-red-900/60 text-red-100 border border-red-900/50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Report
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div >
   )

@@ -112,22 +112,22 @@ export default function LocationAutocomplete({ value, onChange, onSelect, classN
             </div>
 
             {isOpen && (
-                <div className="absolute z-[1100] w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+                <div className="absolute z-[1100] w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
                     {suggestions.length > 0 ? (
                         suggestions.map((item) => (
                             <button
                                 key={item.place_id}
                                 type="button" // Prevent form submission
-                                className="w-full text-left px-4 py-2 hover:bg-muted flex items-start gap-2 text-sm transition-colors"
+                                className="w-full text-left px-4 py-2 hover:bg-slate-100 flex items-start gap-2 text-sm transition-colors text-slate-900"
                                 onClick={() => handleSelect(item)}
                             >
-                                <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                                <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-slate-500" />
                                 <span>{item.display_name}</span>
                             </button>
                         ))
                     ) : (
                         !isLoading && query.length >= 3 && (
-                            <div className="p-4 text-sm text-muted-foreground text-center">
+                            <div className="p-4 text-sm text-slate-500 text-center">
                                 No locations found
                             </div>
                         )
