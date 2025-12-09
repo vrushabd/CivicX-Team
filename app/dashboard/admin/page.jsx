@@ -18,8 +18,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2 } from "lucide-react"
+import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2, Map as MapIcon, Search } from "lucide-react"
 import { uploadImage, updateReport, getReports, createNotification, deleteReport } from "@/lib/data-service"
+import LocationAutocomplete from "@/components/map/LocationAutocomplete"
+import nextDynamic from "next/dynamic"
+
+const AdminMap = nextDynamic(() => import("@/components/map/AdminMap"), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg flex items-center justify-center text-slate-500">Loading Map...</div>
+})
 
 export default function AdminDashboard() {
   const [userEmail, setUserEmail] = useState("")
@@ -31,6 +38,11 @@ export default function AdminDashboard() {
   const [completionNotes, setCompletionNotes] = useState("")
   const [isSubmittingCompletion, setIsSubmittingCompletion] = useState(false)
   const [isLoadingReports, setIsLoadingReports] = useState(true)
+
+  // Map state
+  const [mapLocation, setMapLocation] = useState("")
+  const [mapCoords, setMapCoords] = useState(null)
+  const [selectedMapReport, setSelectedMapReport] = useState(null)
   const fileInputRef = useRef(null)
   const router = useRouter()
 
@@ -328,6 +340,117 @@ export default function AdminDashboard() {
                   <p className="text-2xl font-bold text-white">{stats.completed}</p>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Map Search Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
+              <div className="lg:col-span-2 flex flex-col gap-4 h-full">
+                <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+                  <CardContent className="p-4 flex gap-4 items-center">
+                    <div className="flex-1">
+                      <LocationAutocomplete
+                        value={mapLocation}
+                        onChange={(val) => setMapLocation(val)}
+                        onSelect={({ location, lat, lng }) => {
+                          setMapLocation(location)
+                          setMapCoords({ lat, lng })
+
+                          // Auto-select logic
+                          const matchingReport = reports.find(r =>
+                            (r.coords && Math.abs(r.coords.lat - lat) < 0.001 && Math.abs(r.coords.lng - lng) < 0.001) ||
+                            r.location.toLowerCase().includes(location.split(',')[0].toLowerCase())
+                          )
+
+                          if (matchingReport) {
+                            setSelectedMapReport(matchingReport)
+                          } else {
+                            setSelectedMapReport(null)
+                          }
+                        }}
+                        placeholder="Search location to find reports..."
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setMapLocation("")
+                        setMapCoords(null)
+                        setSelectedMapReport(null)
+                      }}
+                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    >
+                      Clear
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-slate-800 border-slate-700 flex-grow overflow-hidden">
+                  <CardContent className="p-0 h-full">
+                    <AdminMap
+                      reports={reports}
+                      selectedLocationCoords={mapCoords}
+                      onMarkerClick={(report) => {
+                        setSelectedMapReport(report)
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Selected Report Preview */}
+              <div className="h-full overflow-y-auto">
+                <Card className="bg-slate-800 border-slate-700 h-full flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MapIcon className="w-5 h-5 text-emerald-400" />
+                      {selectedMapReport ? "Selected Report" : "Map Details"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow overflow-y-auto">
+                    {selectedMapReport ? (
+                      <div className="space-y-4">
+                        <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                          {selectedMapReport.video ? (
+                            <video
+                              src={selectedMapReport.video}
+                              controls
+                              className="w-full h-full object-contain"
+                            />
+                          ) : selectedMapReport.image ? (
+                            <img
+                              src={selectedMapReport.image}
+                              alt="Report"
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-slate-500">No media</div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-white">{selectedMapReport.title}</h3>
+                          <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
+                            <MapPin className="w-4 h-4" />
+                            <span className="line-clamp-2">{selectedMapReport.location}</span>
+                          </div>
+                        </div>
+                        <Button
+                          className="w-full"
+                          variant="secondary"
+                          onClick={() => setSelectedReport(selectedMapReport)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Manage Report
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center text-slate-500 p-4 text-center">
+                        <Search className="w-8 h-8 opacity-20 mb-2" />
+                        <p className="text-sm">Search or click a pin to view details.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             <div className="flex gap-4 items-center">
