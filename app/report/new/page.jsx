@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import nextDynamic from "next/dynamic";
-import { createReport, uploadImage } from "@/lib/data-service";
+import { createReport, uploadImage, createNotification } from "@/lib/data-service";
 import { getImageForLocation } from "@/lib/location-images";
 
 import {
@@ -213,6 +213,15 @@ export default function NewReport() {
       const reportId = await createReport(reportData);
 
       console.log("Report created successfully with ID:", reportId);
+
+      // Notify Admins
+      await createNotification({
+        type: "new_report",
+        title: "New Report Submitted",
+        message: `A new report "${formData.title}" has been submitted for ${formData.location}`,
+        recipientRole: "admin", // Notify all admins
+        reportId: reportId
+      });
 
       alert("Report submitted successfully!");
       router.push("/dashboard/user");

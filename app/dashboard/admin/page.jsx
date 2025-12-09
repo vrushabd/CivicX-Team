@@ -399,7 +399,8 @@ export default function AdminDashboard() {
             </div>
 
             {/* Map Search Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
+            {/* Map Search Section - RESTORED */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px] mb-8">
               <div className="lg:col-span-2 flex flex-col gap-4 h-full">
                 <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
                   <CardContent className="p-4 flex gap-4 items-center">
@@ -411,7 +412,6 @@ export default function AdminDashboard() {
                           setMapLocation(location)
                           setMapCoords({ lat, lng })
 
-                          // 1. Try to find an existing user report
                           const matchingReport = reports.find(r =>
                             (r.coords && Math.abs(r.coords.lat - lat) < 0.001 && Math.abs(r.coords.lng - lng) < 0.001) ||
                             r.location.toLowerCase().includes(location.split(',')[0].toLowerCase())
@@ -420,11 +420,6 @@ export default function AdminDashboard() {
                           if (matchingReport) {
                             setSelectedMapReport(matchingReport)
                           } else {
-                            // 2. If no report, check our dynamic location references
-                            // Pass the FULL location string to allow partial matching against long addresses
-                            console.log("Checking image for location:", location)
-
-                            // Find best match from locationRefs
                             let bestMatch = null;
                             let maxLen = 0;
                             const normalizedSearch = location.toLowerCase();
@@ -440,7 +435,6 @@ export default function AdminDashboard() {
                             });
 
                             if (bestMatch) {
-                              // Create a mock report object for display
                               setSelectedMapReport({
                                 id: 'mock-' + bestMatch.id,
                                 title: "Historical Data / Reference",
@@ -496,68 +490,9 @@ export default function AdminDashboard() {
                       <MapIcon className="w-5 h-5 text-emerald-400" />
                       Live Incident Map
                     </h2>
-
-                    {/* Add Location Data Button Removed as per request */}
-                  </div>
-
-                  <div className="relative z-10 w-full max-w-xl">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-20 pointer-events-none" />
-                      <LocationAutocomplete
-                        className="pl-10 w-full"
-                        onSelect={({ location, lat, lng }) => {
-                          setMapLocation(location)
-                          setMapCoords({ lat, lng })
-
-                          const matchingReport = reports.find(r =>
-                            (r.coords && Math.abs(r.coords.lat - lat) < 0.001 && Math.abs(r.coords.lng - lng) < 0.001) ||
-                            r.location.toLowerCase().includes(location.split(',')[0].toLowerCase())
-                          )
-
-                          if (matchingReport) {
-                            setSelectedMapReport(matchingReport)
-                          } else {
-                            console.log("Checking image for location:", location)
-
-                            let bestMatch = null;
-                            let maxLen = 0;
-                            const normalizedSearch = location.toLowerCase();
-
-                            locationRefs.forEach(ref => {
-                              const key = ref.key.toLowerCase();
-                              if (normalizedSearch.includes(key) || key.includes(normalizedSearch)) {
-                                if (key.length > maxLen) {
-                                  bestMatch = ref;
-                                  maxLen = key.length;
-                                }
-                              }
-                            });
-
-                            if (bestMatch) {
-                              setSelectedMapReport({
-                                id: 'mock-' + bestMatch.id,
-                                title: "Historical Data / Reference",
-                                location: location,
-                                description: "This is a reference image/video for this location from our database.",
-                                status: "reference",
-                                type: "Reference",
-                                userEmail: "system@civicx.com",
-                                createdAt: new Date().toISOString(),
-                                image: bestMatch.image,
-                                video: bestMatch.video
-                              })
-                            } else {
-                              setSelectedMapReport(null)
-                            }
-                          }
-                        }}
-                        placeholder="Search location to find reports..."
-                        value={mapLocation}
-                        onChange={(val) => setMapLocation(val)}
-                      />
-                    </div>
                   </div>
                 </div>
+
                 <Card className="bg-slate-800 border-slate-700 h-full flex flex-col">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
