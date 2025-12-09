@@ -82,18 +82,18 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <header className="border-b border-slate-700 bg-slate-800/50">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-md transition-all duration-300 supports-[backdrop-filter]:bg-slate-900/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-2 group cursor-pointer">
+              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
                 <Leaf className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-slate-300">CivicX</span>
+              <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">CivicX</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Citizen Dashboard</h1>
-              <p className="text-slate-300">Welcome back, {userEmail}</p>
+              <h1 className="text-xl font-bold text-white tracking-tight">Citizen Dashboard</h1>
+              <p className="text-slate-400 text-xs">Welcome back, {userEmail ? userEmail.split('@')[0] : 'User'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-white">
@@ -102,7 +102,7 @@ export default function UserDashboard() {
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="gap-2 bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="gap-2 bg-white/5 border-white/10 text-slate-300 hover:bg-red-500/20 hover:text-red-200 hover:border-red-500/30 transition-all duration-300 active:scale-95"
             >
               <LogOut className="w-4 h-4" />
               Logout
@@ -111,14 +111,14 @@ export default function UserDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-xl font-semibold text-white">Your Reports</h2>
-            <p className="text-slate-300">Track the status of your civic issue reports</p>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Your Reports</h2>
+            <p className="text-slate-400 mt-1">Track the status of your civic issue reports</p>
           </div>
           <Link href="/report/new">
-            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 hover:shadow-emerald-500/20 transition-all duration-300 hover:scale-105 active:scale-95 h-10 px-6">
               <Plus className="w-4 h-4" />
               New Report
             </Button>
@@ -126,32 +126,38 @@ export default function UserDashboard() {
         </div>
 
         {reports.length === 0 ? (
-          <Card className="text-center py-12 bg-slate-800 border-slate-700">
+          <Card className="text-center py-16 bg-slate-800/40 border-white/5 border-dashed">
             <CardContent>
-              <div className="mx-auto w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mb-4">
-                <MapPin className="w-8 h-8 text-slate-400" />
+              <div className="mx-auto w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-500">
+                <MapPin className="w-10 h-10 text-slate-500/50" />
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-white">No reports yet</h3>
-              <p className="text-slate-300 mb-4">Start by reporting a civic issue in your area</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">No reports yet</h3>
+              <p className="text-slate-400 mb-8 max-w-sm mx-auto">Start by reporting a civic issue in your area to help improve your community.</p>
               <Link href="/report/new">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">Create Your First Report</Button>
+                <Button className="bg-emerald-600 hover:bg-emerald-500 text-white h-11 px-8 shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-105 active:scale-95">
+                  Create Your First Report
+                </Button>
               </Link>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-6">
-            {reports.map((report) => (
-              <Card key={report.id} className="hover:shadow-md transition-shadow bg-slate-800 border-slate-700">
+            {reports.map((report, index) => (
+              <Card
+                key={report.id}
+                className="hover:shadow-xl transition-all duration-300 bg-slate-800/40 border-white/5 hover:border-emerald-500/30 hover:bg-slate-800/60 group animate-in fade-in slide-in-from-bottom-4"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-lg text-white">{report.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2 mt-1 text-slate-300">
-                        <MapPin className="w-4 h-4" />
+                      <CardTitle className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">{report.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-2 mt-2 text-slate-400">
+                        <MapPin className="w-4 h-4 text-emerald-500/70" />
                         {report.location}
                       </CardDescription>
                     </div>
-                    <Badge className={`gap-1 ${getStatusColor(report.status)}`}>
+                    <Badge className={`gap-1.5 px-3 py-1 ${getStatusColor(report.status)} transition-all duration-300 group-hover:scale-105`}>
                       {getStatusIcon(report.status)}
                       {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                     </Badge>
@@ -159,52 +165,64 @@ export default function UserDashboard() {
                 </CardHeader>
                 <CardContent>
                   {report.description && report.description !== "No description provided" && report.description.trim() !== "" && (
-                    <p className="text-slate-300 mb-4">{report.description}</p>
+                    <p className="text-slate-300 mb-6 leading-relaxed bg-slate-900/30 p-4 rounded-lg border border-white/5">{report.description}</p>
                   )}
                   {report.image && (
-                    <div className="mb-4">
-                      <p className="text-sm text-slate-400 mb-2">Evidence Photo:</p>
-                      <img
-                        src={report.image || "/placeholder.svg"}
-                        alt="Report evidence"
-                        className="w-full max-w-md h-48 object-cover rounded-lg border border-slate-600"
-                      />
+                    <div className="mb-6 group-hover:opacity-100 transition-opacity">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Evidence Photo</p>
+                      <div className="overflow-hidden rounded-xl border border-white/10 group-hover:border-emerald-500/20 transition-colors">
+                        <img
+                          src={report.image || "/placeholder.svg"}
+                          alt="Report evidence"
+                          className="w-full max-w-md h-48 object-cover hover:scale-105 transition-transform duration-700"
+                        />
+                      </div>
                     </div>
                   )}
                   {report.video && (
-                    <div className="mb-4">
-                      <p className="text-sm text-slate-400 mb-2">Evidence Video:</p>
-                      <video
-                        src={report.video}
-                        controls
-                        className="w-full max-w-md h-64 object-contain rounded-lg border border-slate-600 bg-black"
-                      />
+                    <div className="mb-6">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Evidence Video</p>
+                      <div className="overflow-hidden rounded-xl border border-white/10 bg-black">
+                        <video
+                          src={report.video}
+                          controls
+                          className="w-full max-w-md h-64 object-contain"
+                        />
+                      </div>
                     </div>
                   )}
                   {report.status === 'completed' && report.completionImage && (
-                    <div className="mb-4 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
-                      <p className="text-sm text-green-400 mb-2 font-semibold">✅ Completion Photo:</p>
-                      <img
-                        src={report.completionImage}
-                        alt="Completion evidence"
-                        className="w-full max-w-md h-48 object-cover rounded-lg border border-green-500/30 mb-2"
-                      />
+                    <div className="mb-4 p-5 bg-emerald-950/20 border border-emerald-500/20 rounded-xl animate-in fade-in zoom-in duration-500">
+                      <p className="text-sm text-emerald-400 mb-3 font-semibold flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" /> Completion Verified
+                      </p>
+                      <div className="overflow-hidden rounded-lg border border-emerald-500/20 mb-3">
+                        <img
+                          src={report.completionImage}
+                          alt="Completion evidence"
+                          className="w-full max-w-md h-48 object-cover hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
                       {report.completionNotes && (
-                        <p className="text-sm text-slate-300 mt-2">
-                          <span className="font-semibold">Notes:</span> {report.completionNotes}
-                        </p>
+                        <div className="text-sm text-slate-300 mt-3 pl-3 border-l-2 border-emerald-500/30">
+                          <span className="font-medium text-emerald-400/80 block mb-1">Worker Notes:</span>
+                          {report.completionNotes}
+                        </div>
                       )}
                       {report.completedAt && (
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-emerald-500/50 mt-3 text-right">
                           Completed on {new Date(report.completedAt).toLocaleDateString()}
                         </p>
                       )}
                     </div>
                   )}
-                  <div className="flex items-center justify-between text-sm text-slate-400">
-                    <span>Reported on {new Date(report.createdAt).toLocaleDateString()}</span>
+                  <div className="flex items-center justify-between text-sm text-slate-500 mt-6 pt-6 border-t border-white/5">
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-3 h-3" />
+                      Reported on {new Date(report.createdAt).toLocaleDateString()}
+                    </span>
                     <div className="flex items-center gap-4">
-                      <span className="capitalize">{report.type} Issue</span>
+                      <Badge variant="outline" className="capitalize border-slate-700 text-slate-400">{report.type} Issue</Badge>
                       <ComplaintModal userEmail={userEmail} report={report} />
                     </div>
                   </div>

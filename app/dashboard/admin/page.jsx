@@ -57,11 +57,15 @@ export default function AdminDashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    if (typeof window == undefined) return
+    if (typeof window === "undefined") return // Correct server-side check
+
     const role = localStorage.getItem("userRole")
     const email = localStorage.getItem("userEmail")
 
+    console.log("Admin Dashboard Auth Check:", { role, email })
+
     if (role !== "admin") {
+      console.warn("Unauthorized access or session lost. Redirecting to home.")
       router.push("/")
       return
     }
@@ -221,7 +225,7 @@ export default function AdminDashboard() {
       alert("Report resolved successfully!")
     } catch (error) {
       console.error("Error resolving report:", error)
-      alert("Failed to resolve report. Please try again.")
+      alert(`Failed to resolve report: ${error.message || "Unknown error"}`)
     } finally {
       setIsSubmittingCompletion(false)
     }
@@ -313,18 +317,18 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <header className="border-b border-slate-700 bg-slate-800/50">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-md transition-all duration-300 supports-[backdrop-filter]:bg-slate-900/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-2 group cursor-pointer">
+              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
                 <Leaf className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-slate-300">CivicX</span>
+              <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">CivicX</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-slate-300">Municipal Services Management</p>
+              <h1 className="text-xl font-bold text-white tracking-tight">Admin Dashboard</h1>
+              <p className="text-slate-400 text-xs">Municipal Services Management</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-white">
@@ -332,7 +336,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="gap-2 bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="gap-2 bg-white/5 border-white/10 text-slate-300 hover:bg-red-500/20 hover:text-red-200 hover:border-red-500/30 transition-all duration-300 active:scale-95"
             >
               <LogOut className="w-4 h-4" />
               Logout
@@ -341,18 +345,18 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700">
+      <main className="container mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-500">
+        <Tabs defaultValue="reports" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 border border-white/5 p-1 rounded-xl">
             <TabsTrigger
               value="reports"
-              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
+              className="rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-900/20 transition-all duration-300"
             >
               Reports Management
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
-              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
+              className="rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-900/20 transition-all duration-300"
             >
               Analytics
             </TabsTrigger>
@@ -360,42 +364,25 @@ export default function AdminDashboard() {
 
           <TabsContent value="reports" className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-400">Total</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.total}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm text-slate-400">Pending</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.pending}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm text-slate-400">Approved</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.approved}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm text-slate-400">Completed</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.completed}</p>
-                </CardContent>
-              </Card>
+              {[
+                { label: "Total", value: stats.total, icon: BarChart3, color: "text-slate-400", bg: "bg-slate-800/50" },
+                { label: "Pending", value: stats.pending, icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+                { label: "Approved", value: stats.approved, icon: CheckCircle, color: "text-blue-400", bg: "bg-blue-500/10" },
+                { label: "Completed", value: stats.completed, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" }
+              ].map((stat, i) => (
+                <Card key={stat.label} className="bg-slate-800/40 border-white/5 hover:border-emerald-500/30 transition-all duration-300 hover:bg-slate-800/60 group overflow-hidden relative">
+                  <div className={`absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-${stat.color.split('-')[1]}-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  <CardContent className="p-4 relative">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`p-2 rounded-lg ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
+                        <stat.icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm text-slate-400 font-medium">{stat.label}</span>
+                    </div>
+                    <p className="text-3xl font-bold text-white tracking-tight group-hover:translate-x-1 transition-transform duration-300">{stat.value}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
 
             {/* Map Search Section */}

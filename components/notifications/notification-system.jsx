@@ -6,7 +6,7 @@ import { Bell, CheckCircle, AlertCircle, Clock, UserCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { NotificationService } from "@/lib/notification-service"
+import { getNotifications, markNotificationAsRead } from "@/lib/data-service"
 
 export function NotificationSystem({ userEmail, userRole }) {
   const [notifications, setNotifications] = useState([])
@@ -17,10 +17,14 @@ export function NotificationSystem({ userEmail, userRole }) {
     // Changed to OR: if either is missing, don't load notifications
     if (!userEmail || !userRole) return
 
-    const loadNotifications = () => {
-      const userNotifications = NotificationService.getNotifications(userEmail, userRole)
-      setNotifications(userNotifications)
-      setUnreadCount(userNotifications.filter((n) => !n.read).length)
+    const loadNotifications = async () => {
+      try {
+        const userNotifications = await getNotifications(userEmail, userRole)
+        setNotifications(userNotifications)
+        setUnreadCount(userNotifications.filter((n) => !n.read).length)
+      } catch (error) {
+        console.error("Failed to load notifications:", error)
+      }
     }
 
     loadNotifications()
@@ -30,10 +34,14 @@ export function NotificationSystem({ userEmail, userRole }) {
     return () => clearInterval(interval)
   }, [userEmail, userRole])
 
-  const handleMarkAsRead = (notificationId) => {
-    NotificationService.markAsRead(notificationId)
-    setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)))
-    setUnreadCount((prev) => Math.max(0, prev - 1))
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await markNotificationAsRead(notificationId)
+      setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)))
+      setUnreadCount((prev) => Math.max(0, prev - 1))
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error)
+    }
   }
 
   const getNotificationIcon = (type) => {
@@ -80,7 +88,7 @@ export function NotificationSystem({ userEmail, userRole }) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0 bg-slate-800 border-slate-700 text-white z-[100]" align="end">
         <div className="p-4 border-b">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && <p className="text-sm text-muted-foreground">{unreadCount} unread</p>}

@@ -1,6 +1,12 @@
 'use client'
 
 import React, { useState } from "react"
+import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Users, ArrowLeft, AlertCircle, Leaf } from "lucide-react"
 import { authService } from "@/lib/auth-service"
 
 export default function SignUpPage() {
@@ -35,114 +41,100 @@ export default function SignUpPage() {
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Citizen Sign Up</h2>
-        <p style={styles.subtitle}>Create an account to report civic issues</p>
+    <div className="min-h-screen bg-slate-900 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0f172a] to-black flex items-center justify-center p-4">
+      <div className="absolute top-6 left-6 flex items-center gap-2 group cursor-pointer">
+        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
+          <Leaf className="w-6 h-6 text-white" />
+        </div>
+        <span className="text-xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">PickUpNow</span>
+      </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="text"
-            placeholder="Enter your full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={styles.input}
-            required
-          />
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            style={styles.input}
-            required
-          />
+      <div className="w-full max-w-md animate-in fade-in zoom-in duration-500">
+        <Link href="/" className="inline-flex items-center text-slate-400 hover:text-white mb-8 transition-colors group">
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </Link>
 
-          <button type="submit" style={styles.button} disabled={isLoading}>
-            {isLoading ? "Creating Account..." : "Sign Up"}
-          </button>
-        </form>
+        <Card className="bg-slate-900/40 backdrop-blur-xl border-white/10 shadow-2xl shadow-emerald-900/20 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-50" />
+          <CardHeader className="text-center relative z-10 pb-2">
+            <div className="mx-auto w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center mb-6 border border-white/5 shadow-inner group transition-transform hover:scale-110 duration-500">
+              <Users className="w-8 h-8 text-emerald-400" />
+            </div>
+            <CardTitle className="text-3xl font-bold text-white tracking-tight">Citizen Sign Up</CardTitle>
+            <CardDescription className="text-slate-400 text-base">Create an account to report civic issues</CardDescription>
+          </CardHeader>
+          <CardContent className="relative z-10 pt-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-slate-300 ml-1">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-slate-950/50 border-white/10 text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-emerald-500/20 h-11"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-300 ml-1">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-slate-950/50 border-white/10 text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-emerald-500/20 h-11"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-slate-300 ml-1">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-slate-950/50 border-white/10 text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-emerald-500/20 h-11"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-slate-300 ml-1">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="bg-slate-950/50 border-white/10 text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-emerald-500/20 h-11"
+                  required
+                />
+              </div>
 
-        <p style={styles.footer}>
-          Already have an account?{" "}
-          <a href="/login/user" style={{ color: "limegreen" }}>
-            Sign In
-          </a>
-        </p>
+              <Button type="submit" className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 hover:shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.02] mt-2 font-medium" disabled={isLoading}>
+                {isLoading ? "Creating Account..." : "Sign Up"}
+              </Button>
+            </form>
 
-        <p style={{ marginTop: "15px", color: "white", textAlign: "center" }}>
-          Created by <span style={{ color: "limegreen", fontWeight: "bold" }}>PickUpNow</span>
-        </p>
+            <p className="text-sm text-center text-slate-400 mt-6">
+              Already have an account?{" "}
+              <Link href="/login/user" className="text-emerald-400 hover:text-emerald-300 hover:underline font-medium transition-colors">
+                Sign In
+              </Link>
+            </p>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-slate-500">
+                Created by <span className="text-emerald-500 font-bold">PickUpNow</span>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
-}
-
-const styles = {
-  container: {
-    backgroundColor: "#000",
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    color: "#fff",
-  },
-  card: {
-    backgroundColor: "#111",
-    padding: "30px",
-    borderRadius: "10px",
-    textAlign: "center",
-    width: "350px",
-    boxShadow: "0px 0px 10px rgba(0,255,0,0.3)",
-  },
-  title: {
-    marginBottom: "5px",
-  },
-  subtitle: {
-    marginBottom: "20px",
-    fontSize: "14px",
-    color: "#ccc",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #444",
-    backgroundColor: "#222",
-    color: "#fff",
-  },
-  button: {
-    padding: "10px",
-    borderRadius: "5px",
-    backgroundColor: "limegreen",
-    border: "none",
-    color: "#000",
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-  footer: {
-    marginTop: "15px",
-    fontSize: "13px",
-    color: "#bbb",
-  },
 }
