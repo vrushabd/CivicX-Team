@@ -20,8 +20,9 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { ProfileModal } from "@/components/profile-modal"
 import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2, Map as MapIcon, Search, Plus } from "lucide-react"
-import { uploadImage, updateReport, getReports, createNotification, deleteReport, getLocationReferences, addLocationReference } from "@/lib/data-service"
+import { uploadImage, updateReport, getReports, createNotification, deleteReport, getLocationReferences, addLocationReference, getUserProfile } from "@/lib/data-service"
 import LocationAutocomplete from "@/components/map/LocationAutocomplete"
 import nextDynamic from "next/dynamic"
 // import { getImageForLocation, LOCATION_IMAGES } from "@/lib/location-images" // Replaced by dynamic DB fetch
@@ -33,6 +34,7 @@ const AdminMap = nextDynamic(() => import("@/components/map/AdminMap"), {
 
 export default function AdminDashboard() {
   const [userEmail, setUserEmail] = useState("")
+  const [fullName, setFullName] = useState("")
   const [reports, setReports] = useState([])
   const [selectedReport, setSelectedReport] = useState(null)
   const [filterStatus, setFilterStatus] = useState("all")
@@ -95,8 +97,20 @@ export default function AdminDashboard() {
       }
     }
 
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile(email)
+        if (profile?.full_name) {
+          setFullName(profile.full_name)
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error)
+      }
+    }
+
     loadReports()
     loadLocationRefs()
+    loadProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run once on mount - router dependency causes infinite re-renders
 
@@ -329,11 +343,14 @@ export default function AdminDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">Admin Dashboard</h1>
-              <p className="text-slate-400 text-xs">Municipal Services Management</p>
+              <p className="text-slate-400 text-xs hidden md:block">
+                {fullName ? `Welcome, ${fullName}` : "Municipal Services Management"}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-white">
             <NotificationSystem userEmail={userEmail} userRole="admin" />
+            <ProfileModal userEmail={userEmail} currentName={fullName} onUpdate={setFullName} />
             <Button
               variant="outline"
               onClick={handleLogout}

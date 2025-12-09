@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { NotificationSystem } from "@/components/notifications/notification-system"
 import { ComplaintModal } from "@/components/complaint-modal"
+import { ProfileModal } from "@/components/profile-modal"
 import { Plus, MapPin, Clock, CheckCircle, AlertCircle, LogOut, Leaf } from "lucide-react"
-import { getUserReports } from "@/lib/data-service"
+import { getUserReports, getUserProfile } from "@/lib/data-service"
 
 export default function UserDashboard() {
   const [userEmail, setUserEmail] = useState("")
+  const [fullName, setFullName] = useState("")
   const [reports, setReports] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
@@ -29,22 +31,28 @@ export default function UserDashboard() {
 
     setUserEmail(email)
 
-    // Load user's reports from Firebase
-    const loadUserReports = async () => {
+    // Load user's data
+    const loadData = async () => {
       try {
         setIsLoading(true)
-        const userReports = await getUserReports(email)
+        const [userReports, userProfile] = await Promise.all([
+          getUserReports(email),
+          getUserProfile(email)
+        ])
         setReports(userReports)
+        if (userProfile?.full_name) {
+          setFullName(userProfile.full_name)
+        }
       } catch (error) {
-        console.error("Error loading user reports:", error)
+        console.error("Error loading user data:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadUserReports()
+    loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run once on mount - router dependency causes infinite re-renders
+  }, []) // Only run once on mount
 
   const handleLogout = () => {
     localStorage.removeItem("userRole")
@@ -93,12 +101,15 @@ export default function UserDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">Citizen Dashboard</h1>
-              <p className="text-slate-400 text-xs hidden md:block">Welcome back, {userEmail ? userEmail.split('@')[0] : 'User'}</p>
+              <p className="text-slate-400 text-xs hidden md:block">
+                Welcome back, {fullName || (userEmail ? userEmail.split('@')[0] : 'User')}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-white">
             <NotificationSystem userEmail={userEmail} userRole="user" />
             <ComplaintModal userEmail={userEmail} />
+            <ProfileModal userEmail={userEmail} currentName={fullName} onUpdate={setFullName} />
             <Button
               variant="outline"
               onClick={handleLogout}

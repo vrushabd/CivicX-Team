@@ -2,11 +2,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bell, CheckCircle, AlertCircle, Clock, UserCheck } from "lucide-react"
+import { Bell, CheckCircle, AlertCircle, Clock, UserCheck, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { getNotifications, markNotificationAsRead } from "@/lib/data-service"
+import { getNotifications, markNotificationAsRead, deleteNotification } from "@/lib/data-service"
 
 export function NotificationSystem({ userEmail, userRole }) {
   const [notifications, setNotifications] = useState([])
@@ -41,6 +41,21 @@ export function NotificationSystem({ userEmail, userRole }) {
       setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (error) {
       console.error("Failed to mark notification as read:", error)
+    }
+  }
+
+  const handleDelete = async (e, notificationId) => {
+    e.stopPropagation() // Prevent triggering mark as read
+    try {
+      await deleteNotification(notificationId)
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
+      // Decrease unread count if the deleted notification was unread
+      const wasUnread = notifications.find(n => n.id === notificationId && !n.read)
+      if (wasUnread) {
+        setUnreadCount((prev) => Math.max(0, prev - 1))
+      }
+    } catch (error) {
+      console.error("Failed to delete notification:", error)
     }
   }
 
@@ -103,11 +118,11 @@ export function NotificationSystem({ userEmail, userRole }) {
             notifications.slice(0, 10).map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 border-b hover:bg-muted/50 transition-colors cursor-pointer ${!notification.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
+                className={`p-4 border-b hover:bg-muted/50 transition-colors cursor-pointer group relative ${!notification.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
                   }`}
                 onClick={() => !notification.read && handleMarkAsRead(notification.id)}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 pr-6">
                   {getNotificationIcon(notification.type)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
@@ -118,6 +133,14 @@ export function NotificationSystem({ userEmail, userRole }) {
                     <p className="text-xs text-muted-foreground mt-2">{formatTimeAgo(notification.createdAt)}</p>
                   </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-500"
+                  onClick={(e) => handleDelete(e, notification.id)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
               </div>
             ))
           )}
