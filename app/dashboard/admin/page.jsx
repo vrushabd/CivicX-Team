@@ -294,7 +294,14 @@ export default function AdminDashboard() {
 
   const filteredReports = reports.filter((report) => {
     const statusMatch = filterStatus === "all" || report.status === filterStatus
-    return statusMatch
+
+    // Filter by map search location if active
+    let locationMatch = true
+    if (mapLocation && mapLocation.trim().length > 0) {
+      locationMatch = report.location && report.location.toLowerCase().includes(mapLocation.toLowerCase())
+    }
+
+    return statusMatch && locationMatch
   })
 
   const stats = {
