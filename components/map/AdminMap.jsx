@@ -49,6 +49,18 @@ const AdminMap = ({ reports, selectedLocationCoords, onMarkerClick }) => {
 
                 <RecenterOnCoords coords={selectedLocationCoords} />
 
+                {/* Render Marker for Searched Location if provided */}
+                {selectedLocationCoords && (
+                    <Marker position={[selectedLocationCoords.lat, selectedLocationCoords.lng]}>
+                        <Popup>
+                            <div className="p-2 space-y-2">
+                                <h3 className="font-semibold text-sm">Selected Location</h3>
+                                <p className="text-xs text-gray-500">Searched Address</p>
+                            </div>
+                        </Popup>
+                    </Marker>
+                )}
+
                 {reports.map((report) => (
                     report.coords && (
                         <Marker
