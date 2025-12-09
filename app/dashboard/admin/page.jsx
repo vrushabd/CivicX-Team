@@ -18,8 +18,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2 } from "lucide-react"
+import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2, Map as MapIcon, Search } from "lucide-react"
 import { uploadImage, updateReport, getReports, createNotification, deleteReport } from "@/lib/data-service"
+import LocationAutocomplete from "@/components/map/LocationAutocomplete"
+import nextDynamic from "next/dynamic"
+
+const AdminMap = nextDynamic(() => import("@/components/map/AdminMap"), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg flex items-center justify-center text-slate-500">Loading Map...</div>
+})
 
 export default function AdminDashboard() {
   const [userEmail, setUserEmail] = useState("")
@@ -31,6 +38,9 @@ export default function AdminDashboard() {
   const [completionNotes, setCompletionNotes] = useState("")
   const [isSubmittingCompletion, setIsSubmittingCompletion] = useState(false)
   const [isLoadingReports, setIsLoadingReports] = useState(true)
+  const [mapLocation, setMapLocation] = useState("")
+  const [mapCoords, setMapCoords] = useState(null)
+  const [selectedMapReport, setSelectedMapReport] = useState(null)
   const fileInputRef = useRef(null)
   const router = useRouter()
 
@@ -287,6 +297,12 @@ export default function AdminDashboard() {
               className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
             >
               Analytics
+            </TabsTrigger>
+            <TabsTrigger
+              value="map"
+              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
+            >
+              Map View
             </TabsTrigger>
           </TabsList>
 
@@ -605,6 +621,137 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="map" className="h-[calc(100vh-200px)] min-h-[600px]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+              {/* Left Side: Map and Search */}
+              <div className="lg:col-span-2 flex flex-col gap-4 h-full">
+                <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+                  <CardContent className="p-4 flex gap-4 items-center">
+                    <div className="flex-1">
+                      <LocationAutocomplete
+                        value={mapLocation}
+                        onChange={(val) => setMapLocation(val)}
+                        onSelect={({ location, lat, lng }) => {
+                          setMapLocation(location)
+                          setMapCoords({ lat, lng })
+                        }}
+                        placeholder="Search location to find reports..."
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setMapLocation("")
+                        setMapCoords(null)
+                        setSelectedMapReport(null)
+                      }}
+                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    >
+                      Clear
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-slate-800 border-slate-700 flex-grow overflow-hidden">
+                  <CardContent className="p-0 h-full">
+                    <AdminMap
+                      reports={reports}
+                      selectedLocationCoords={mapCoords}
+                      onMarkerClick={(report) => {
+                        setSelectedMapReport(report)
+                        // If user clicks a marker, we can optionally center on it or just show details
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Side: Report Details / Gallery for Selected Location */}
+              <div className="h-full overflow-y-auto">
+                <Card className="bg-slate-800 border-slate-700 h-full flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MapIcon className="w-5 h-5 text-emerald-400" />
+                      {selectedMapReport ? "Selected Report" : "Location Data"}
+                    </CardTitle>
+                    <CardDescription className="text-slate-400">
+                      {selectedMapReport
+                        ? "Details from the selected map pin"
+                        : "Select a pin or search a location to see details"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow overflow-y-auto">
+                    {selectedMapReport ? (
+                      <div className="space-y-6">
+                        <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                          {selectedMapReport.video ? (
+                            <video
+                              src={selectedMapReport.video}
+                              controls
+                              className="w-full h-full object-contain"
+                            />
+                          ) : selectedMapReport.image ? (
+                            <img
+                              src={selectedMapReport.image}
+                              alt="Report"
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-slate-500">No media available</div>
+                          )}
+                        </div>
+
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{selectedMapReport.title}</h3>
+                            <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
+                              <MapPin className="w-4 h-4" />
+                              <span className="line-clamp-2">{selectedMapReport.location}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Badge className={getStatusColor(selectedMapReport.status)}>
+                              {selectedMapReport.status}
+                            </Badge>
+                            <Badge variant="outline" className="text-slate-300 border-slate-600">
+                              {selectedMapReport.type}
+                            </Badge>
+                          </div>
+
+                          {selectedMapReport.description && selectedMapReport.description.trim() !== "No description provided" && (
+                            <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-700">
+                              <p className="text-slate-300 text-sm">{selectedMapReport.description}</p>
+                            </div>
+                          )}
+
+                          <div className="text-xs text-slate-500 pt-4 border-t border-slate-700">
+                            Reported by {selectedMapReport.userEmail} <br />
+                            on {new Date(selectedMapReport.createdAt).toLocaleDateString()}
+                          </div>
+
+                          <Button
+                            className="w-full"
+                            variant="secondary"
+                            onClick={() => setSelectedReport(selectedMapReport)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Full Details / Manage
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center text-slate-500 p-8 text-center space-y-4">
+                        <Search className="w-12 h-12 opacity-20" />
+                        <p>Search for a location or click a marker on the map to view user-submitted data.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 
