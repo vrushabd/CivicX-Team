@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notifications/notification-system"
@@ -18,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2, Map as MapIcon, Search } from "lucide-react"
+import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, Leaf, Camera, Upload, Trash2, Map as MapIcon, Search } from "lucide-react"
 import { uploadImage, updateReport, getReports, createNotification, deleteReport } from "@/lib/data-service"
 import LocationAutocomplete from "@/components/map/LocationAutocomplete"
 import nextDynamic from "next/dynamic"
@@ -32,15 +30,20 @@ export default function AdminDashboard() {
   const [userEmail, setUserEmail] = useState("")
   const [reports, setReports] = useState([])
   const [selectedReport, setSelectedReport] = useState(null)
-  const [filterStatus, setFilterStatus] = useState("all")
+
+  // Completion state
   const [completionImage, setCompletionImage] = useState(null)
   const [completionImagePreview, setCompletionImagePreview] = useState(null)
   const [completionNotes, setCompletionNotes] = useState("")
   const [isSubmittingCompletion, setIsSubmittingCompletion] = useState(false)
+
   const [isLoadingReports, setIsLoadingReports] = useState(true)
+
+  // Map state
   const [mapLocation, setMapLocation] = useState("")
   const [mapCoords, setMapCoords] = useState(null)
   const [selectedMapReport, setSelectedMapReport] = useState(null)
+
   const fileInputRef = useRef(null)
   const router = useRouter()
 
@@ -71,7 +74,7 @@ export default function AdminDashboard() {
 
     loadReports()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run once on mount - router dependency causes infinite re-renders
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem("userRole")
@@ -135,6 +138,12 @@ export default function AdminDashboard() {
       const updatedReports = reports.filter((report) => report.id !== reportId)
       setReports(updatedReports)
       setSelectedReport(null) // Close dialog if open
+
+      // Also clear map selection if simplified
+      if (selectedMapReport && selectedMapReport.id === reportId) {
+        setSelectedMapReport(null)
+      }
+
       alert("Report deleted successfully")
     } catch (error) {
       console.error("Error deleting report:", error)
@@ -230,29 +239,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="w-4 h-4" />
-      case "pending":
-        return <Clock className="w-4 h-4" />
-      default:
-        return <AlertCircle className="w-4 h-4" />
-    }
-  }
-
-  const filteredReports = reports.filter((report) => {
-    const statusMatch = filterStatus === "all" || report.status === filterStatus
-    return statusMatch
-  })
-
-  const stats = {
-    total: reports.length,
-    pending: reports.filter((r) => r.status === "pending").length,
-    approved: reports.filter((r) => r.status === "approved").length,
-    completed: reports.filter((r) => r.status === "completed").length,
-  }
-
   return (
     <div className="min-h-screen bg-slate-900">
       <header className="border-b border-slate-700 bg-slate-800/50">
@@ -283,529 +269,332 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="map" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700">
-            <TabsTrigger
-              value="reports"
-              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
-            >
-              Reports Management
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
-            >
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger
-              value="map"
-              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
-            >
-              Map View
-            </TabsTrigger>
-          </TabsList>
+      <main className="container mx-auto px-4 py-8 h-[calc(100vh-100px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+          {/* Left Side: Map and Search */}
+          <div className="lg:col-span-2 flex flex-col gap-4 h-full">
+            <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+              <CardContent className="p-4 flex gap-4 items-center">
+                <div className="flex-1">
+                  <LocationAutocomplete
+                    value={mapLocation}
+                    onChange={(val) => setMapLocation(val)}
+                    onSelect={({ location, lat, lng }) => {
+                      setMapLocation(location)
+                      setMapCoords({ lat, lng })
 
-          <TabsContent value="reports" className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-400">Total</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.total}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm text-slate-400">Pending</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.pending}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm text-slate-400">Approved</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.approved}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm text-slate-400">Completed</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stats.completed}</p>
-                </CardContent>
-              </Card>
-            </div>
+                      // Auto-select logic: Find a report close to this location or matching the name
+                      const matchingReport = reports.find(r =>
+                        (r.coords && Math.abs(r.coords.lat - lat) < 0.001 && Math.abs(r.coords.lng - lng) < 0.001) ||
+                        r.location.toLowerCase().includes(location.split(',')[0].toLowerCase())
+                      )
 
-            <div className="flex gap-4 items-center">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-slate-400" />
-                <span className="text-sm text-slate-400">Filters:</span>
-              </div>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40 bg-slate-800 border-slate-600 text-white">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600 text-white">
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                      if (matchingReport) {
+                        setSelectedMapReport(matchingReport)
+                      } else {
+                        setSelectedMapReport(null)
+                      }
+                    }}
+                    placeholder="Search location to find reports..."
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setMapLocation("")
+                    setMapCoords(null)
+                    setSelectedMapReport(null)
+                  }}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                >
+                  Clear
+                </Button>
+              </CardContent>
+            </Card>
 
-            <div className="grid gap-4">
-              {filteredReports.map((report) => (
-                <Card key={report.id} className="hover:shadow-md transition-shadow bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg text-white">{report.title}</CardTitle>
-                        <CardDescription className="flex items-center gap-4 mt-2 text-slate-300">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
-                            {report.location}
-                          </span>
-                          <span className="capitalize">{report.type} Issue</span>
-                          <span>by {report.userEmail}</span>
-                        </CardDescription>
-                      </div>
-                      <Badge className={`gap-1 ${getStatusColor(report.status)}`}>
-                        {getStatusIcon(report.status)}
-                        {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                      </Badge>
+            <Card className="bg-slate-800 border-slate-700 flex-grow overflow-hidden">
+              <CardContent className="p-0 h-full">
+                <AdminMap
+                  reports={reports}
+                  selectedLocationCoords={mapCoords}
+                  onMarkerClick={(report) => {
+                    setSelectedMapReport(report)
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Side: Report Details / Gallery for Selected Location */}
+          <div className="h-full overflow-y-auto">
+            <Card className="bg-slate-800 border-slate-700 h-full flex flex-col">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <MapIcon className="w-5 h-5 text-emerald-400" />
+                  {selectedMapReport ? "Selected Report" : "Location Data"}
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  {selectedMapReport
+                    ? "Details from the selected map pin"
+                    : "Select a pin or search a location to see details"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow overflow-y-auto">
+                {selectedMapReport ? (
+                  <div className="space-y-6">
+                    <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                      {selectedMapReport.video ? (
+                        <video
+                          src={selectedMapReport.video}
+                          controls
+                          className="w-full h-full object-contain"
+                        />
+                      ) : selectedMapReport.image ? (
+                        <img
+                          src={selectedMapReport.image}
+                          alt="Report"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="text-slate-500">No media available</div>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    {report.description && report.description !== "No description provided" && report.description.trim() !== "" && (
-                      <p className="text-slate-300 mb-4">{report.description}</p>
-                    )}
 
-                    {report.aiValidation && (
-                      <div className="mb-4 p-3 bg-slate-700 rounded-lg border border-slate-600">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div
-                            className={`w-2 h-2 rounded-full ${report.aiValidation.isValid ? "bg-emerald-400" : "bg-red-400"
-                              }`}
-                          ></div>
-                          <span className="text-sm font-medium text-white">
-                            AI Validation: {report.aiValidation.isValid ? "Valid" : "Invalid"} (
-                            {report.aiValidation.confidence}% confidence)
-                          </span>
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{selectedMapReport.title}</h3>
+                        <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
+                          <MapPin className="w-4 h-4" />
+                          <span className="line-clamp-2">{selectedMapReport.location}</span>
                         </div>
-                        <p className="text-sm text-slate-300">{report.aiValidation.message}</p>
                       </div>
-                    )}
 
-                    <div className="flex items-center justify-between">
                       <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="gap-2 bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                              onClick={() => setSelectedReport(report)}
-                            >
-                              <Eye className="w-4 h-4" />
-                              View Details
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl bg-slate-800 border-slate-600">
-                            <DialogHeader>
-                              <DialogTitle className="text-white">{selectedReport?.title}</DialogTitle>
-                              <DialogDescription className="text-slate-300">
-                                Report Details and Evidence
-                              </DialogDescription>
-                            </DialogHeader>
-                            {selectedReport && (
+                        <Badge className={getStatusColor(selectedMapReport.status)}>
+                          {selectedMapReport.status}
+                        </Badge>
+                        <Badge variant="outline" className="text-slate-300 border-slate-600">
+                          {selectedMapReport.type}
+                        </Badge>
+                      </div>
+
+                      {selectedMapReport.description && selectedMapReport.description.trim() !== "No description provided" && (
+                        <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-700">
+                          <p className="text-slate-300 text-sm">{selectedMapReport.description}</p>
+                        </div>
+                      )}
+
+                      <div className="text-xs text-slate-500 pt-4 border-t border-slate-700">
+                        Reported by {selectedMapReport.userEmail} <br />
+                        on {new Date(selectedMapReport.createdAt).toLocaleDateString()}
+                      </div>
+
+                      <Button
+                        className="w-full"
+                        variant="secondary"
+                        onClick={() => setSelectedReport(selectedMapReport)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Full Details / Manage
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500 p-8 text-center space-y-4">
+                    <Search className="w-12 h-12 opacity-20" />
+                    <p>Search for a location or click a marker on the map to view user-submitted data.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+
+      {/* Hidden Dialog for Full Details handling (reused from original logic) */}
+      <Dialog open={!!selectedReport} onOpenChange={(open) => !open && setSelectedReport(null)}>
+        <DialogContent className="max-w-2xl bg-slate-800 border-slate-600">
+          <DialogHeader>
+            <DialogTitle className="text-white">{selectedReport?.title}</DialogTitle>
+            <DialogDescription className="text-slate-300">
+              Report Details and Evidence
+            </DialogDescription>
+          </DialogHeader>
+          {selectedReport && (
+            <div className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2 text-white">Description</h4>
+                  <p className="text-slate-300">{selectedReport.description}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2 text-white">Location</h4>
+                  <p className="text-slate-300">{selectedReport.location}</p>
+                </div>
+                {selectedReport.image && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-white">Photo Evidence</h4>
+                    <img
+                      src={selectedReport.image || "/placeholder.svg"}
+                      alt="Report evidence"
+                      className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
+                    />
+                  </div>
+                )}
+                {selectedReport.video && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-white">Video Evidence</h4>
+                    <video
+                      src={selectedReport.video}
+                      controls
+                      className="w-full max-w-md h-64 object-contain rounded-lg border border-slate-600 bg-black"
+                    />
+                  </div>
+                )}
+                {selectedReport.completionImage && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-white">Completion Photo</h4>
+                    <img
+                      src={selectedReport.completionImage || "/placeholder.svg"}
+                      alt="Completion proof"
+                      className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
+                    />
+                  </div>
+                )}
+                {selectedReport.completionNotes && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-white">Completion Notes</h4>
+                    <p className="text-slate-300">{selectedReport.completionNotes}</p>
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-medium mb-2 text-white">Submitted</h4>
+                  <p className="text-slate-300">{new Date(selectedReport.createdAt).toLocaleString()} by {selectedReport.userEmail}</p>
+                </div>
+              </div>
+              <div className="pt-4 border-t border-slate-700">
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDeleteReport(selectedReport.id)}
+                  className="w-full gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Report
+                </Button>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                {selectedReport.status === "pending" && (
+                  <>
+                    <Button
+                      onClick={() => handleApproveReport(selectedReport.id)}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleRejectReport(selectedReport.id)}
+                      className="flex-1"
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {selectedReport.status === "approved" && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <CheckCircle className="w-4 h-4" />
+                        Mark Complete
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-slate-800 border-slate-600">
+                      <DialogHeader>
+                        <DialogTitle className="text-white">Complete Task</DialogTitle>
+                        <DialogDescription className="text-slate-300">
+                          Upload a photo showing the completed work and add any notes.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-white">Completion Photo *</Label>
+                          <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center bg-slate-700/50">
+                            {completionImagePreview ? (
                               <div className="space-y-4">
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium mb-2 text-white">Description</h4>
-                                    <p className="text-slate-300">{selectedReport.description}</p>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium mb-2 text-white">Location</h4>
-                                    <p className="text-slate-300">{selectedReport.location}</p>
-                                  </div>
-                                  {selectedReport.image && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Photo Evidence</h4>
-                                      <img
-                                        src={selectedReport.image || "/placeholder.svg"}
-                                        alt="Report evidence"
-                                        className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
-                                      />
-                                    </div>
-                                  )}
-                                  {selectedReport.video && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Video Evidence</h4>
-                                      <video
-                                        src={selectedReport.video}
-                                        controls
-                                        className="w-full max-w-md h-64 object-contain rounded-lg border border-slate-600 bg-black"
-                                      />
-                                    </div>
-                                  )}
-                                  {selectedReport.completionImage && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Completion Photo</h4>
-                                      <img
-                                        src={selectedReport.completionImage || "/placeholder.svg"}
-                                        alt="Completion proof"
-                                        className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
-                                      />
-                                    </div>
-                                  )}
-                                  {selectedReport.completionNotes && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-white">Completion Notes</h4>
-                                      <p className="text-slate-300">{selectedReport.completionNotes}</p>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <h4 className="font-medium mb-2 text-white">Submitted</h4>
-                                    <p className="text-slate-300">
-                                      {new Date(selectedReport.createdAt).toLocaleString()} by {selectedReport.userEmail}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="pt-4 border-t border-slate-700">
+                                <img
+                                  src={completionImagePreview}
+                                  alt="Completion proof"
+                                  className="max-w-full h-48 object-cover rounded-lg mx-auto"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => fileInputRef.current?.click()}
+                                  className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                >
+                                  Change Photo
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                <Camera className="w-12 h-12 text-slate-400 mx-auto" />
+                                <div>
+                                  <p className="text-slate-300 mb-2">
+                                    Upload a photo showing the completed work
+                                  </p>
                                   <Button
-                                    variant="destructive"
-                                    onClick={() => handleDeleteReport(selectedReport.id)}
-                                    className="w-full gap-2"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="gap-2 bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
                                   >
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete Report
+                                    <Upload className="w-4 h-4" />
+                                    Choose Photo
                                   </Button>
                                 </div>
                               </div>
                             )}
-                          </DialogContent>
-                        </Dialog>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </div>
+                        </div>
 
-                        {report.status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleApproveReport(report.id)}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                            >
-                              Approve
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleRejectReport(report.id)}>
-                              Reject
-                            </Button>
-                          </>
-                        )}
+                        <div className="space-y-2">
+                          <Label htmlFor="notes" className="text-white">
+                            Completion Notes
+                          </Label>
+                          <Textarea
+                            id="notes"
+                            placeholder="Add any notes about the work completed..."
+                            value={completionNotes}
+                            onChange={(e) => setCompletionNotes(e.target.value)}
+                            rows={3}
+                            className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                          />
+                        </div>
 
                         <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteReport(report.id)}
-                          className="text-slate-400 hover:text-red-400 hover:bg-red-900/20"
-                          title="Delete Report"
+                          onClick={() => handleCompleteReport(selectedReport.id)}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                          disabled={!completionImage || isSubmittingCompletion}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {isSubmittingCompletion ? "Submitting..." : "Submit Completion"}
                         </Button>
-
-                        {report.status === "approved" && (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
-                                <CheckCircle className="w-4 h-4" />
-                                Mark Complete
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-slate-800 border-slate-600">
-                              <DialogHeader>
-                                <DialogTitle className="text-white">Complete Task</DialogTitle>
-                                <DialogDescription className="text-slate-300">
-                                  Upload a photo showing the completed work and add any notes.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div className="space-y-2">
-                                  <Label className="text-white">Completion Photo *</Label>
-                                  <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center bg-slate-700/50">
-                                    {completionImagePreview ? (
-                                      <div className="space-y-4">
-                                        <img
-                                          src={completionImagePreview}
-                                          alt="Completion proof"
-                                          className="max-w-full h-48 object-cover rounded-lg mx-auto"
-                                        />
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          onClick={() => fileInputRef.current?.click()}
-                                          className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                                        >
-                                          Change Photo
-                                        </Button>
-                                      </div>
-                                    ) : (
-                                      <div className="space-y-4">
-                                        <Camera className="w-12 h-12 text-slate-400 mx-auto" />
-                                        <div>
-                                          <p className="text-slate-300 mb-2">
-                                            Upload a photo showing the completed work
-                                          </p>
-                                          <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="gap-2 bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                                          >
-                                            <Upload className="w-4 h-4" />
-                                            Choose Photo
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    )}
-                                    <input
-                                      ref={fileInputRef}
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handleImageUpload}
-                                      className="hidden"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <Label htmlFor="notes" className="text-white">
-                                    Completion Notes
-                                  </Label>
-                                  <Textarea
-                                    id="notes"
-                                    placeholder="Add any notes about the work completed..."
-                                    value={completionNotes}
-                                    onChange={(e) => setCompletionNotes(e.target.value)}
-                                    rows={3}
-                                    className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                                  />
-                                </div>
-
-                                <Button
-                                  onClick={() => handleCompleteReport(report.id)}
-                                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                                  disabled={!completionImage || isSubmittingCompletion}
-                                >
-                                  {isSubmittingCompletion ? "Submitting..." : "Submit Completion"}
-                                </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        )}
                       </div>
-
-                      <div className="text-sm text-slate-400">
-                        {report.completedAt && <span>Completed: {new Date(report.completedAt).toLocaleString()}</span>}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="map" className="h-[80vh] min-h-[600px] mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-              {/* Left Side: Map and Search */}
-              <div className="lg:col-span-2 flex flex-col gap-4 h-full">
-                <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
-                  <CardContent className="p-4 flex gap-4 items-center">
-                    <div className="flex-1">
-                      <LocationAutocomplete
-                        value={mapLocation}
-                        onChange={(val) => setMapLocation(val)}
-                        onSelect={({ location, lat, lng }) => {
-                          setMapLocation(location)
-                          setMapCoords({ lat, lng })
-
-                          // Auto-select logic: Find a report close to this location or matching the name
-                          // We'll use a simple name match or first report at these coords for now
-                          const matchingReport = reports.find(r =>
-                            (r.coords && Math.abs(r.coords.lat - lat) < 0.001 && Math.abs(r.coords.lng - lng) < 0.001) ||
-                            r.location.toLowerCase().includes(location.split(',')[0].toLowerCase())
-                          )
-
-                          if (matchingReport) {
-                            setSelectedMapReport(matchingReport)
-                          } else {
-                            // If no exact match, clear selection so they see "No reports found here" or general view
-                            setSelectedMapReport(null)
-                          }
-                        }}
-                        placeholder="Search location to find reports..."
-                      />
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setMapLocation("")
-                        setMapCoords(null)
-                        setSelectedMapReport(null)
-                      }}
-                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                    >
-                      Clear
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-slate-800 border-slate-700 flex-grow overflow-hidden">
-                  <CardContent className="p-0 h-full">
-                    <AdminMap
-                      reports={reports}
-                      selectedLocationCoords={mapCoords}
-                      onMarkerClick={(report) => {
-                        setSelectedMapReport(report)
-                        // If user clicks a marker, we can optionally center on it or just show details
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Right Side: Report Details / Gallery for Selected Location */}
-              <div className="h-full overflow-y-auto">
-                <Card className="bg-slate-800 border-slate-700 h-full flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <MapIcon className="w-5 h-5 text-emerald-400" />
-                      {selectedMapReport ? "Selected Report" : "Location Data"}
-                    </CardTitle>
-                    <CardDescription className="text-slate-400">
-                      {selectedMapReport
-                        ? "Details from the selected map pin"
-                        : "Select a pin or search a location to see details"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow overflow-y-auto">
-                    {selectedMapReport ? (
-                      <div className="space-y-6">
-                        <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
-                          {selectedMapReport.video ? (
-                            <video
-                              src={selectedMapReport.video}
-                              controls
-                              className="w-full h-full object-contain"
-                            />
-                          ) : selectedMapReport.image ? (
-                            <img
-                              src={selectedMapReport.image}
-                              alt="Report"
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <div className="text-slate-500">No media available</div>
-                          )}
-                        </div>
-
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">{selectedMapReport.title}</h3>
-                            <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
-                              <MapPin className="w-4 h-4" />
-                              <span className="line-clamp-2">{selectedMapReport.location}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2">
-                            <Badge className={getStatusColor(selectedMapReport.status)}>
-                              {selectedMapReport.status}
-                            </Badge>
-                            <Badge variant="outline" className="text-slate-300 border-slate-600">
-                              {selectedMapReport.type}
-                            </Badge>
-                          </div>
-
-                          {selectedMapReport.description && selectedMapReport.description.trim() !== "No description provided" && (
-                            <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-700">
-                              <p className="text-slate-300 text-sm">{selectedMapReport.description}</p>
-                            </div>
-                          )}
-
-                          <div className="text-xs text-slate-500 pt-4 border-t border-slate-700">
-                            Reported by {selectedMapReport.userEmail} <br />
-                            on {new Date(selectedMapReport.createdAt).toLocaleDateString()}
-                          </div>
-
-                          <Button
-                            className="w-full"
-                            variant="secondary"
-                            onClick={() => setSelectedReport(selectedMapReport)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Full Details / Manage
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-slate-500 p-8 text-center space-y-4">
-                        <Search className="w-12 h-12 opacity-20" />
-                        <p>Search for a location or click a marker on the map to view user-submitted data.</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-slate-800 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Report Status Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-300">Pending</span>
-                      <span className="font-medium text-white">{stats.pending}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-300">Approved</span>
-                      <span className="font-medium text-white">{stats.approved}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-300">Completed</span>
-                      <span className="font-medium text-white">{stats.completed}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Total Reports</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold text-white">{stats.total}</div>
-                  <p className="text-slate-300 mt-2">All garbage collection reports</p>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div >
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
