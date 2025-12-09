@@ -48,6 +48,15 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table: location_references (for admin map images/videos)
+CREATE TABLE IF NOT EXISTS location_references (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    key TEXT UNIQUE NOT NULL, -- e.g. "pune", "gkvk road"
+    image_url TEXT,
+    video_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_reports_user_email ON reports(user_email);
 CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
@@ -59,6 +68,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE location_references ENABLE ROW LEVEL SECURITY;
 
 -- Policies for reports table
 -- Users can view their own reports
@@ -121,6 +131,23 @@ CREATE POLICY "Admins can create notifications" ON notifications
 CREATE POLICY "Users can update own notifications" ON notifications
   FOR UPDATE
   USING (recipient_email = auth.jwt() ->> 'email');
+
+-- Policies for location_references table
+-- Everyone can view location references (or maybe just admins? Assuming mostly admins for map)
+-- Let's allow public read for now so it works easily, or restrict to admin. 
+-- Given the requirement "accessible by the admin", we will restrict write to admin, read to all or admin.
+CREATE POLICY "Everyone can read location references" ON location_references
+    FOR SELECT USING (true); -- Public read access for map fallback
+
+CREATE POLICY "Admins can insert location references" ON location_references
+    FOR INSERT WITH CHECK (
+        EXISTS ( SELECT 1 FROM users WHERE users.email = auth.jwt() ->> 'email' AND users.role = 'admin' )
+    );
+
+CREATE POLICY "Admins can update location references" ON location_references
+    FOR UPDATE USING (
+        EXISTS ( SELECT 1 FROM users WHERE users.email = auth.jwt() ->> 'email' AND users.role = 'admin' )
+    );
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

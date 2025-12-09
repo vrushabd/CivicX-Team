@@ -19,10 +19,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2, Map as MapIcon, Search } from "lucide-react"
-import { uploadImage, updateReport, getReports, createNotification, deleteReport } from "@/lib/data-service"
+import { uploadImage, updateReport, getReports, createNotification, deleteReport, getLocationReferences } from "@/lib/data-service"
 import LocationAutocomplete from "@/components/map/LocationAutocomplete"
 import nextDynamic from "next/dynamic"
-import { getImageForLocation, LOCATION_IMAGES } from "@/lib/location-images"
+// import { getImageForLocation, LOCATION_IMAGES } from "@/lib/location-images" // Replaced by dynamic DB fetch
 
 const AdminMap = nextDynamic(() => import("@/components/map/AdminMap"), {
   ssr: false,
@@ -39,6 +39,7 @@ export default function AdminDashboard() {
   const [completionNotes, setCompletionNotes] = useState("")
   const [isSubmittingCompletion, setIsSubmittingCompletion] = useState(false)
   const [isLoadingReports, setIsLoadingReports] = useState(true)
+  const [locationRefs, setLocationRefs] = useState([])
 
   // Map state
   const [mapLocation, setMapLocation] = useState("")
@@ -72,7 +73,17 @@ export default function AdminDashboard() {
       }
     }
 
+    const loadLocationRefs = async () => {
+      try {
+        const refs = await getLocationReferences()
+        setLocationRefs(refs)
+      } catch (error) {
+        console.error("Error loading location refs:", error)
+      }
+    }
+
     loadReports()
+    loadLocationRefs()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run once on mount - router dependency causes infinite re-renders
 
@@ -365,18 +376,29 @@ export default function AdminDashboard() {
                           if (matchingReport) {
                             setSelectedMapReport(matchingReport)
                           } else {
-                            // 2. If no report, check our pre-defined location images
+                            // 2. If no report, check our dynamic location references
                             // Pass the FULL location string to allow partial matching against long addresses
                             console.log("Checking image for location:", location)
-                            const locationImage = getImageForLocation(location);
 
-                            if (locationImage) {
-                              // Determine if it's a video or image
-                              const isVideo = locationImage.toLowerCase().endsWith('.mp4');
+                            // Find best match from locationRefs
+                            let bestMatch = null;
+                            let maxLen = 0;
+                            const normalizedSearch = location.toLowerCase();
 
+                            locationRefs.forEach(ref => {
+                              const key = ref.key.toLowerCase();
+                              if (normalizedSearch.includes(key) || key.includes(normalizedSearch)) {
+                                if (key.length > maxLen) {
+                                  bestMatch = ref;
+                                  maxLen = key.length;
+                                }
+                              }
+                            });
+
+                            if (bestMatch) {
                               // Create a mock report object for display
                               setSelectedMapReport({
-                                id: 'mock-' + Date.now(),
+                                id: 'mock-' + bestMatch.id,
                                 title: "Historical Data / Reference",
                                 location: location,
                                 description: "This is a reference image/video for this location from our database.",
@@ -384,8 +406,8 @@ export default function AdminDashboard() {
                                 type: "Reference",
                                 userEmail: "system@civicx.com",
                                 createdAt: new Date().toISOString(),
-                                image: isVideo ? null : locationImage,
-                                video: isVideo ? locationImage : null
+                                image: bestMatch.image,
+                                video: bestMatch.video
                               })
                             } else {
                               setSelectedMapReport(null)
