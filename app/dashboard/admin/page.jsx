@@ -490,56 +490,7 @@ export default function AdminDashboard() {
                       Live Incident Map
                     </h2>
 
-                    {/* Add Location Data Button */}
-                    <Dialog open={isAddLocationOpen} onOpenChange={setIsAddLocationOpen}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" className="gap-2 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700">
-                          <Plus className="w-4 h-4" />
-                          Add Location Data
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-slate-800 border-slate-700 text-white">
-                        <DialogHeader>
-                          <DialogTitle>Add Location Reference</DialogTitle>
-                          <DialogDescription className="text-slate-400">
-                            Add a photo or video reference for a specific location.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="loc-name">Location Name</Label>
-                            <Input
-                              id="loc-name"
-                              placeholder="e.g. MG Road, Bangalore"
-                              className="bg-slate-900 border-slate-700"
-                              value={newLocKey}
-                              onChange={(e) => setNewLocKey(e.target.value)}
-                            />
-                            <p className="text-xs text-slate-500">This key will be matched when searching.</p>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="loc-file">Reference Image/Video</Label>
-                            <Input
-                              id="loc-file"
-                              type="file"
-                              accept="image/*,video/*"
-                              className="bg-slate-900 border-slate-700 cursor-pointer"
-                              onChange={(e) => setNewLocFile(e.target.files[0])}
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button variant="ghost" onClick={() => setIsAddLocationOpen(false)}>Cancel</Button>
-                          <Button
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                            onClick={handleLocationSubmit}
-                            disabled={isUploadingLoc}
-                          >
-                            {isUploadingLoc ? "Uploading..." : "Save Location"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    {/* Add Location Data Button Removed as per request */}
                   </div>
 
                   <div className="relative z-10 w-full max-w-xl">
