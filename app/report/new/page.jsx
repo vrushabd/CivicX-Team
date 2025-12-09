@@ -41,7 +41,7 @@ export default function NewReport() {
   const [formData, setFormData] = useState({
     title: "",
     title: "",
-    description: "No description provided",
+    description: " ",
     location: "",
     location: "",
     coords: null,

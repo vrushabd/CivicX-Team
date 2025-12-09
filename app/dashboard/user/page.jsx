@@ -158,7 +158,9 @@ export default function UserDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-slate-300 mb-4">{report.description}</p>
+                  {report.description && report.description !== "No description provided" && report.description.trim() !== "" && (
+                    <p className="text-slate-300 mb-4">{report.description}</p>
+                  )}
                   {report.image && (
                     <div className="mb-4">
                       <p className="text-sm text-slate-400 mb-2">Evidence Photo:</p>
@@ -166,6 +168,16 @@ export default function UserDashboard() {
                         src={report.image || "/placeholder.svg"}
                         alt="Report evidence"
                         className="w-full max-w-md h-48 object-cover rounded-lg border border-slate-600"
+                      />
+                    </div>
+                  )}
+                  {report.video && (
+                    <div className="mb-4">
+                      <p className="text-sm text-slate-400 mb-2">Evidence Video:</p>
+                      <video
+                        src={report.video}
+                        controls
+                        className="w-full max-w-md h-64 object-contain rounded-lg border border-slate-600 bg-black"
                       />
                     </div>
                   )}

@@ -372,7 +372,9 @@ export default function AdminDashboard() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-slate-300 mb-4">{report.description}</p>
+                    {report.description && report.description !== "No description provided" && report.description.trim() !== "" && (
+                      <p className="text-slate-300 mb-4">{report.description}</p>
+                    )}
 
                     {report.aiValidation && (
                       <div className="mb-4 p-3 bg-slate-700 rounded-lg border border-slate-600">
@@ -429,6 +431,16 @@ export default function AdminDashboard() {
                                         src={selectedReport.image || "/placeholder.svg"}
                                         alt="Report evidence"
                                         className="w-full max-w-md h-64 object-cover rounded-lg border border-slate-600"
+                                      />
+                                    </div>
+                                  )}
+                                  {selectedReport.video && (
+                                    <div>
+                                      <h4 className="font-medium mb-2 text-white">Video Evidence</h4>
+                                      <video
+                                        src={selectedReport.video}
+                                        controls
+                                        className="w-full max-w-md h-64 object-contain rounded-lg border border-slate-600 bg-black"
                                       />
                                     </div>
                                   )}
