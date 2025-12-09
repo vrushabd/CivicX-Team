@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notifications/notification-system"
 import {
@@ -17,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter, Leaf, Camera, Upload, Trash2, Map as MapIcon, Search, Plus } from "lucide-react"
 import { uploadImage, updateReport, getReports, createNotification, deleteReport, getLocationReferences, addLocationReference } from "@/lib/data-service"
