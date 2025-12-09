@@ -141,70 +141,70 @@ export default function UserDashboard() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             {reports.map((report, index) => (
               <Card
                 key={report.id}
-                className="hover:shadow-xl transition-all duration-300 bg-slate-800/40 border-white/5 hover:border-emerald-500/30 hover:bg-slate-800/60 group animate-in fade-in slide-in-from-bottom-4"
+                className="hover:shadow-xl transition-all duration-300 bg-slate-800/40 border-white/5 hover:border-emerald-500/30 hover:bg-slate-800/60 group animate-in fade-in slide-in-from-bottom-4 flex flex-col"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">{report.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2 mt-2 text-slate-400">
-                        <MapPin className="w-4 h-4 text-emerald-500/70" />
+                      <CardTitle className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-1">{report.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-2 mt-2 text-slate-400 line-clamp-1">
+                        <MapPin className="w-4 h-4 text-emerald-500/70 shrink-0" />
                         {report.location}
                       </CardDescription>
                     </div>
-                    <Badge className={`gap-1.5 px-3 py-1 ${getStatusColor(report.status)} transition-all duration-300 group-hover:scale-105`}>
+                    <Badge className={`gap-1.5 px-3 py-1 ${getStatusColor(report.status)} transition-all duration-300 group-hover:scale-105 shrink-0`}>
                       {getStatusIcon(report.status)}
                       {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex flex-col">
                   {report.description && report.description !== "No description provided" && report.description.trim() !== "" && (
-                    <p className="text-slate-300 mb-6 leading-relaxed bg-slate-900/30 p-4 rounded-lg border border-white/5">{report.description}</p>
+                    <p className="text-slate-300 mb-6 leading-relaxed bg-slate-900/30 p-4 rounded-lg border border-white/5 line-clamp-3">{report.description}</p>
                   )}
                   {report.image && (
-                    <div className="mb-6 group-hover:opacity-100 transition-opacity">
+                    <div className="mb-6 group-hover:opacity-100 transition-opacity mt-auto">
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Evidence Photo</p>
-                      <div className="overflow-hidden rounded-xl border border-white/10 group-hover:border-emerald-500/20 transition-colors w-1/2">
+                      <div className="overflow-hidden rounded-xl border border-white/10 group-hover:border-emerald-500/20 transition-colors">
                         <img
                           src={report.image || "/placeholder.svg"}
                           alt="Report evidence"
-                          className="w-full h-auto object-contain hover:scale-105 transition-transform duration-700"
+                          className="w-full h-auto object-contain hover:scale-105 transition-transform duration-700 max-h-96"
                         />
                       </div>
                     </div>
                   )}
                   {report.video && (
-                    <div className="mb-6">
+                    <div className="mb-6 mt-auto">
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Evidence Video</p>
-                      <div className="overflow-hidden rounded-xl border border-white/10 bg-black w-1/2">
+                      <div className="overflow-hidden rounded-xl border border-white/10 bg-black">
                         <video
                           src={report.video}
                           controls
-                          className="w-full h-auto object-contain"
+                          className="w-full h-auto object-contain max-h-96"
                         />
                       </div>
                     </div>
                   )}
                   {report.status === 'completed' && report.completionImage && (
-                    <div className="mb-4 p-5 bg-emerald-950/20 border border-emerald-500/20 rounded-xl animate-in fade-in zoom-in duration-500">
+                    <div className="mb-4 p-5 bg-emerald-950/20 border border-emerald-500/20 rounded-xl animate-in fade-in zoom-in duration-500 mt-auto">
                       <p className="text-sm text-emerald-400 mb-3 font-semibold flex items-center gap-2">
                         <CheckCircle className="w-4 h-4" /> Completion Verified
                       </p>
-                      <div className="overflow-hidden rounded-lg border border-emerald-500/20 mb-3 w-1/2">
+                      <div className="overflow-hidden rounded-lg border border-emerald-500/20 mb-3">
                         <img
                           src={report.completionImage}
                           alt="Completion evidence"
-                          className="w-full h-auto object-contain hover:scale-105 transition-transform duration-500"
+                          className="w-full h-auto object-contain hover:scale-105 transition-transform duration-500 max-h-96"
                         />
                       </div>
                       {report.completionNotes && (
-                        <div className="text-sm text-slate-300 mt-3 pl-3 border-l-2 border-emerald-500/30">
+                        <div className="text-sm text-slate-300 mt-3 pl-3 border-l-2 border-emerald-500/30 line-clamp-2">
                           <span className="font-medium text-emerald-400/80 block mb-1">Worker Notes:</span>
                           {report.completionNotes}
                         </div>
@@ -216,7 +216,7 @@ export default function UserDashboard() {
                       )}
                     </div>
                   )}
-                  <div className="flex items-center justify-between text-sm text-slate-500 mt-6 pt-6 border-t border-white/5">
+                  <div className="flex items-center justify-between text-sm text-slate-500 mt-auto pt-6 border-t border-white/5">
                     <span className="flex items-center gap-2">
                       <Clock className="w-3 h-3" />
                       Reported on {new Date(report.createdAt).toLocaleDateString()}
