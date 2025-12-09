@@ -317,7 +317,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-900 overflow-x-hidden">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-md transition-all duration-300 supports-[backdrop-filter]:bg-slate-900/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -388,7 +388,7 @@ export default function AdminDashboard() {
 
             {/* Map Search Section */}
             {/* Map Search Section - RESTORED */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px] mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px] lg:h-[700px] mb-8">
               <div className="lg:col-span-2 flex flex-col gap-4 h-full">
                 <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
                   <CardContent className="p-4 flex gap-4 items-center">
