@@ -284,7 +284,7 @@ export default function AdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="reports" className="space-y-6">
+        <Tabs defaultValue="map" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700">
             <TabsTrigger
               value="reports"
@@ -624,7 +624,7 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="map" className="h-[calc(100vh-200px)] min-h-[600px]">
+          <TabsContent value="map" className="h-[80vh] min-h-[600px] mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
               {/* Left Side: Map and Search */}
               <div className="lg:col-span-2 flex flex-col gap-4 h-full">
@@ -637,6 +637,20 @@ export default function AdminDashboard() {
                         onSelect={({ location, lat, lng }) => {
                           setMapLocation(location)
                           setMapCoords({ lat, lng })
+
+                          // Auto-select logic: Find a report close to this location or matching the name
+                          // We'll use a simple name match or first report at these coords for now
+                          const matchingReport = reports.find(r =>
+                            (r.coords && Math.abs(r.coords.lat - lat) < 0.001 && Math.abs(r.coords.lng - lng) < 0.001) ||
+                            r.location.toLowerCase().includes(location.split(',')[0].toLowerCase())
+                          )
+
+                          if (matchingReport) {
+                            setSelectedMapReport(matchingReport)
+                          } else {
+                            // If no exact match, clear selection so they see "No reports found here" or general view
+                            setSelectedMapReport(null)
+                          }
                         }}
                         placeholder="Search location to find reports..."
                       />

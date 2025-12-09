@@ -99,7 +99,7 @@ export default function LocationAutocomplete({ value, onChange, onSelect, classN
                     value={query}
                     onChange={handleInputChange}
                     placeholder="Search for a location..."
-                    className="pr-10"
+                    className="pr-10 text-white bg-slate-700 border-slate-600 focus:ring-emerald-500"
                     onFocus={() => setIsOpen(true)}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
