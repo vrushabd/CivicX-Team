@@ -22,6 +22,7 @@ import { AlertCircle, CheckCircle, Clock, MapPin, Eye, LogOut, BarChart3, Filter
 import { uploadImage, updateReport, getReports, createNotification, deleteReport } from "@/lib/data-service"
 import LocationAutocomplete from "@/components/map/LocationAutocomplete"
 import nextDynamic from "next/dynamic"
+import { getImageForLocation, LOCATION_IMAGES } from "@/lib/location-images"
 
 const AdminMap = nextDynamic(() => import("@/components/map/AdminMap"), {
   ssr: false,
@@ -343,7 +344,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Map Search Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
               <div className="lg:col-span-2 flex flex-col gap-4 h-full">
                 <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
                   <CardContent className="p-4 flex gap-4 items-center">
@@ -355,7 +356,7 @@ export default function AdminDashboard() {
                           setMapLocation(location)
                           setMapCoords({ lat, lng })
 
-                          // Auto-select logic
+                          // 1. Try to find an existing user report
                           const matchingReport = reports.find(r =>
                             (r.coords && Math.abs(r.coords.lat - lat) < 0.001 && Math.abs(r.coords.lng - lng) < 0.001) ||
                             r.location.toLowerCase().includes(location.split(',')[0].toLowerCase())
@@ -364,7 +365,29 @@ export default function AdminDashboard() {
                           if (matchingReport) {
                             setSelectedMapReport(matchingReport)
                           } else {
-                            setSelectedMapReport(null)
+                            // 2. If no report, check our pre-defined location images
+                            const locationImage = getImageForLocation(location.split(',')[0]);
+
+                            if (locationImage) {
+                              // Determine if it's a video or image
+                              const isVideo = locationImage.toLowerCase().endsWith('.mp4');
+
+                              // Create a mock report object for display
+                              setSelectedMapReport({
+                                id: 'mock-' + Date.now(),
+                                title: "Historical Data / Reference",
+                                location: location,
+                                description: "This is a reference image/video for this location from our database.",
+                                status: "reference",
+                                type: "Reference",
+                                userEmail: "system@civicx.com",
+                                createdAt: new Date().toISOString(),
+                                image: isVideo ? null : locationImage,
+                                video: isVideo ? locationImage : null
+                              })
+                            } else {
+                              setSelectedMapReport(null)
+                            }
                           }
                         }}
                         placeholder="Search location to find reports..."
